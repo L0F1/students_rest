@@ -5,4 +5,4 @@ REST app for manage students, their courses and marks (test task).
 
     ./mvnw spring-boot:run
     
-Make sure you are using java 11 or higher (JAVA_HOME env variable is set).
+Make sure you are using Java 11 or higher (JAVA_HOME env variable is set).
