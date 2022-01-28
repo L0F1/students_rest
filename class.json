@@ -1,0 +1,27 @@
+[ {
+  "lastName" : "ivanov",
+  "subjectAndMarks" : {
+    "math" : [ 5, 4 ],
+    "english" : [ ],
+    "russian" : [ 5, 5, 5, 2, 2 ]
+  }
+}, {
+  "lastName" : "petrov",
+  "subjectAndMarks" : {
+    "math" : [ 3, 4, 2 ],
+    "english" : [ 2, 3 ]
+  }
+}, {
+  "lastName" : "sergeev",
+  "subjectAndMarks" : {
+    "math" : [ 5, 5, 5 ],
+    "english" : [ 5 ]
+  }
+}, {
+  "lastName" : "sidorov",
+  "subjectAndMarks" : {
+    "math" : [ 2 ],
+    "english" : [ 2 ],
+    "C++" : [ 5, 3, 4 ]
+  }
+} ]
