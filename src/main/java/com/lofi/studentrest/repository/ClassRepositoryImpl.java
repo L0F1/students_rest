@@ -55,7 +55,7 @@ public class ClassRepositoryImpl implements ClassRepository {
             .stream()
             .map(s -> {
                 if (s.getLastName().equals(student.getLastName())) {
-                    s.setSubjectAndMarks(student.getSubjectAndMarks());
+                    s.setSubjects(student.getSubjects());
                 }
                 return s;
             })
@@ -76,12 +76,7 @@ public class ClassRepositoryImpl implements ClassRepository {
 
     @Override
     public synchronized List<Subject> getSubjectsByStudent(String studentName) {
-        return getStudent(studentName)
-            .getSubjectAndMarks()
-            .keySet()
-            .stream()
-            .map(Subject::new)
-            .collect(toList());
+        return getStudent(studentName).getSubjects();
     }
 
     @Override
@@ -92,11 +87,10 @@ public class ClassRepositoryImpl implements ClassRepository {
             .stream()
             .map(s -> {
                 if (s.getLastName().equals(studentName)) {
-                    var subjectsAndMarks = s.getSubjectAndMarks();
-                    String title = subject.getTitle();
-                    checkSubjectNotExist(subjectsAndMarks, title);
-                    subjectsAndMarks.put(title, new ArrayList<>());
-                    s.setSubjectAndMarks(subjectsAndMarks);
+                    var subjectsAndMarks = s.getSubjects();
+                    checkSubjectNotExist(subjectsAndMarks, subject.getTitle());
+                    subjectsAndMarks.add(subject);
+                    s.setSubjects(subjectsAndMarks);
                 }
                 return s;
             })
@@ -113,10 +107,12 @@ public class ClassRepositoryImpl implements ClassRepository {
             .stream()
             .map(s -> {
                 if (s.getLastName().equals(studentName)) {
-                    var subjectsAndMarks = s.getSubjectAndMarks();
+                    var subjectsAndMarks = s.getSubjects();
                     checkSubjectExist(subjectsAndMarks, subjectName);
-                    subjectsAndMarks.remove(subjectName);
-                    s.setSubjectAndMarks(subjectsAndMarks);
+                    s.setSubjects(subjectsAndMarks
+                        .stream()
+                        .filter(subject -> subject.getTitle().equals(subjectName))
+                        .collect(toList()));
                 }
                 return s;
             })
@@ -127,25 +123,23 @@ public class ClassRepositoryImpl implements ClassRepository {
 
     @Override
     public synchronized List<Mark> getMarksBySubjectAndStudent(String studentName, String subjectName) {
-        return Optional.of(getStudent(studentName).getSubjectAndMarks().get(subjectName))
-            .orElseThrow(() -> new NoSuchElementException(format(SUBJECT_NOT_EXIST_BAD_REQUEST, subjectName)))
-            .stream()
-            .map(Mark::new)
-            .collect(toList());
+        List<Subject> subjects = getSubjectsByStudent(studentName);
+        checkSubjectExist(subjects, subjectName);
+        return getSubjectMarks(subjects, subjectName);
     }
 
     @Override
-    public synchronized void setMarksBySubjectAndStudent(String studentName, String subjectName, Mark mark) {
+    public synchronized void setMarkBySubjectAndStudent(String studentName, String subjectName, Mark mark) {
         List<Student> students = readAllStudents();
         checkStudentExist(students, studentName);
         writeAllStudents(students
             .stream()
             .map(s -> {
                 if (s.getLastName().equals(studentName)) {
-                    var subjectsAndMarks = s.getSubjectAndMarks();
+                    var subjectsAndMarks = s.getSubjects();
                     checkSubjectExist(subjectsAndMarks, subjectName);
-                    subjectsAndMarks.get(subjectName).add(mark.getValue());
-                    s.setSubjectAndMarks(subjectsAndMarks);
+                    getSubjectMarks(subjectsAndMarks, subjectName).add(mark);
+                    s.setSubjects(subjectsAndMarks);
                 }
                 return s;
             })
@@ -161,12 +155,10 @@ public class ClassRepositoryImpl implements ClassRepository {
             .stream()
             .map(s -> {
                 if (s.getLastName().equals(studentName)) {
-                    var subjectsAndMarks = s.getSubjectAndMarks();
+                    var subjectsAndMarks = s.getSubjects();
                     checkSubjectExist(subjectsAndMarks, subjectName);
-                    var marks = subjectsAndMarks.get(subjectName);
-                    removeMarkOrElseThrow(marks, mark);
-                    subjectsAndMarks.put(subjectName, marks);
-                    s.setSubjectAndMarks(subjectsAndMarks);
+                    removeMarkOrElseThrow(getSubjectMarks(subjectsAndMarks, subjectName), mark);
+                    s.setSubjects(subjectsAndMarks);
                 }
                 return s;
             })
@@ -180,14 +172,14 @@ public class ClassRepositoryImpl implements ClassRepository {
         List<Student> students = readAllStudents();
         students.forEach(student -> {
                 var avgMarks = new ArrayList<Float>();
-                var subjects = student.getSubjectAndMarks();
-                var subjectTitles = subjects.keySet();
-                ALL_SUBJECTS.forEach(subject -> {
-                    if (subjectTitles.contains(subject)) {
-                        var marks = subjects.get(subject);
+                var subjects = student.getSubjects();
+                var subjectTitles = getSubjectTitles(subjects);
+                ALL_SUBJECTS.forEach(subjectTitle -> {
+                    if (subjectTitles.contains(subjectTitle)) {
+                        var marks = getSubjectMarks(subjects, subjectTitle);
                         if (!marks.isEmpty()) {
                             float avgMark = (marks.stream()
-                                .mapToInt(m -> m)
+                                .mapToInt(Mark::getValue)
                                 .sum()) / (float) marks.size();
 
                             avgMarks.add(avgMark >= minAvg ? avgMark : 0f);
@@ -216,7 +208,7 @@ public class ClassRepositoryImpl implements ClassRepository {
 
     private void updateAllSubjects(List<Student> students) {
         ALL_SUBJECTS.clear();
-        students.forEach(s -> ALL_SUBJECTS.addAll(s.getSubjectAndMarks().keySet()));
+        students.forEach(s -> ALL_SUBJECTS.addAll(getSubjectTitles(s.getSubjects())));
     }
 
     private boolean checkStudent(List<Student> students, String studentName) {
@@ -237,20 +229,36 @@ public class ClassRepositoryImpl implements ClassRepository {
         }
     }
 
-    private void checkSubjectExist(Map<String, List<Integer>> subjectsAndMarks, String subjectName) {
-        if (subjectsAndMarks.get(subjectName) == null){
+    private void checkSubjectExist(List<Subject> subjectsAndMarks, String subjectName) {
+        if (subjectsAndMarks.stream().noneMatch(s -> s.getTitle().equals(subjectName))){
             throw new NoSuchElementException(format(SUBJECT_NOT_EXIST_BAD_REQUEST, subjectName));
         }
     }
 
-    private void checkSubjectNotExist(Map<String, List<Integer>> subjectsAndMarks, String subjectName) {
-        if (subjectsAndMarks.get(subjectName) != null){
+    private void checkSubjectNotExist(List<Subject> subjectsAndMarks, String subjectName) {
+        if (subjectsAndMarks.stream().anyMatch(s -> s.getTitle().equals(subjectName))){
             throw new ElementAlreadyExistException(format(SUBJECT_EXIST_BAD_REQUEST, subjectName));
         }
     }
 
-    private void removeMarkOrElseThrow(List<Integer> marks, Integer mark) {
-        if (!marks.remove(mark)) {
+    private List<String> getSubjectTitles(List<Subject> subjects) {
+        return subjects
+            .stream()
+            .map(Subject::getTitle)
+            .collect(toList());
+    }
+
+    private List<Mark> getSubjectMarks(List<Subject> subjects, String subjectName) {
+        return subjects
+            .stream()
+            .filter(s -> s.getTitle().equals(subjectName))
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException(format(SUBJECT_NOT_EXIST_BAD_REQUEST, subjectName)))
+            .getMarks();
+    }
+
+    private void removeMarkOrElseThrow(List<Mark> marks, Integer mark) {
+        if (!marks.remove(new Mark(mark))) {
             throw new NoSuchElementException(format(MARK_NOT_EXIST_BAD_REQUEST, mark));
         }
     }

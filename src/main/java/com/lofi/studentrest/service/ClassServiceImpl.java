@@ -62,7 +62,7 @@ public class ClassServiceImpl implements ClassService {
 
     @Override
     public void setMarkBySubjectAndStudent(String studentName, String subjectName, Mark mark) {
-        classRepository.setMarksBySubjectAndStudent(studentName, subjectName, mark);
+        classRepository.setMarkBySubjectAndStudent(studentName, subjectName, mark);
     }
 
     @Override

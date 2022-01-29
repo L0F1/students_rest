@@ -28,7 +28,7 @@ public interface ClassRepository {
 
     List<Mark> getMarksBySubjectAndStudent(String studentName, String subjectName);
 
-    void setMarksBySubjectAndStudent(String studentName, String subjectName, Mark mark);
+    void setMarkBySubjectAndStudent(String studentName, String subjectName, Mark mark);
 
     void deleteMarkBySubjectAndStudent(String studentName, String subjectName, Integer mark);
 

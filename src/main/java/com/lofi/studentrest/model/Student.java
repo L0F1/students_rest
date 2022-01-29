@@ -1,9 +1,8 @@
 package com.lofi.studentrest.model;
 
 import javax.validation.constraints.NotBlank;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Student entity
@@ -11,14 +10,14 @@ import java.util.Map;
 public class Student {
     @NotBlank(message = "Name is required")
     String lastName;
-    Map<String, List<Integer>> subjectAndMarks = new HashMap<>();
+    List<Subject> subjects = new ArrayList<>();
 
     public Student() {
     }
 
-    public Student(String lastName, Map<String, List<Integer>> subjectAndMarks) {
+    public Student(String lastName, List<Subject> subjects) {
         this.lastName = lastName;
-        this.subjectAndMarks = subjectAndMarks;
+        this.subjects = subjects;
     }
 
     public String getLastName() {
@@ -29,11 +28,11 @@ public class Student {
         this.lastName = lastName;
     }
 
-    public Map<String, List<Integer>> getSubjectAndMarks() {
-        return subjectAndMarks;
+    public List<Subject> getSubjects() {
+        return subjects;
     }
 
-    public void setSubjectAndMarks(Map<String, List<Integer>> subjectAndMarks) {
-        this.subjectAndMarks = subjectAndMarks;
+    public void setSubjects(List<Subject> subjects) {
+        this.subjects = subjects;
     }
 }
