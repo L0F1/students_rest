@@ -1,5 +1,6 @@
 package com.lofi.studentrest.model;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Objects;
 public class Subject {
     @NotBlank(message = "Name is required")
     String title;
+    @Valid
     List<Mark> marks = new ArrayList<>();
 
     public Subject() {
