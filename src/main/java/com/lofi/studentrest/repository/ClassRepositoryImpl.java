@@ -100,6 +100,29 @@ public class ClassRepositoryImpl implements ClassRepository {
     }
 
     @Override
+    public void updateSubjectByStudent(String studentName, Subject subject) {
+        List<Student> students = readAllStudents();
+        checkStudentExist(students, studentName);
+        writeAllStudents(students
+            .stream()
+            .map(student -> {
+                if (student.getLastName().equals(studentName)) {
+                    var subjectsAndMarks = student.getSubjects();
+                    checkSubjectExist(subjectsAndMarks, subject.getTitle());
+                    subjectsAndMarks.forEach(s -> {
+                        if (s.getTitle().equals(subject.getTitle())){
+                            s.setMarks(subject.getMarks());
+                        }
+                    });
+                    student.setSubjects(subjectsAndMarks);
+                }
+                return student;
+            })
+            .collect(toList())
+        );
+    }
+
+    @Override
     public synchronized void deleteSubjectByStudent(String studentName, String subjectName) {
         List<Student> students = readAllStudents();
         checkStudentExist(students, studentName);

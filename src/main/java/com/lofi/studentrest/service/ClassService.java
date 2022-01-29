@@ -24,6 +24,8 @@ public interface ClassService {
 
     void setSubjectByStudent(String studentName, Subject subject);
 
+    void updateSubjectByStudent(String studentName, Subject subject);
+
     void deleteSubjectByStudent(String studentName, String subjectName);
 
     List<Mark> getMarksBySubjectAndStudent(String studentName, String subjectName);

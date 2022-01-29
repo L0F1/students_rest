@@ -51,6 +51,11 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
+    public void updateSubjectByStudent(String studentName, Subject subject) {
+        classRepository.updateSubjectByStudent(studentName, subject);
+    }
+
+    @Override
     public void deleteSubjectByStudent(String studentName, String subjectName) {
         classRepository.deleteSubjectByStudent(studentName, subjectName);
     }

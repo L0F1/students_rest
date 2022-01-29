@@ -102,6 +102,17 @@ public class StudentController {
         }
     }
 
+    @PutMapping("/student/subjects")
+    public ResponseEntity<String> updateSubject(@RequestParam(name = "studentName") String studentName, @Valid @RequestBody Subject subject) {
+        try {
+            classService.updateSubjectByStudent(studentName, subject);
+            return ResponseEntity.ok("Subject updated successfully");
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/student/subjects")
     public ResponseEntity<String> deleteSubject(@RequestParam(name = "studentName") String studentName,
                                          @RequestParam(name = "subjectName") String subjectName) {
