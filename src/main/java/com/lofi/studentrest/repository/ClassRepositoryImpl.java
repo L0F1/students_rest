@@ -75,7 +75,7 @@ public class ClassRepositoryImpl implements ClassRepository {
     }
 
     @Override
-    public synchronized List<Subject> getSubjectsByStudent(String studentName) {
+    public List<Subject> getSubjectsByStudent(String studentName) {
         return getStudent(studentName).getSubjects();
     }
 
@@ -145,7 +145,7 @@ public class ClassRepositoryImpl implements ClassRepository {
     }
 
     @Override
-    public synchronized List<Mark> getMarksBySubjectAndStudent(String studentName, String subjectName) {
+    public List<Mark> getMarksBySubjectAndStudent(String studentName, String subjectName) {
         List<Subject> subjects = getSubjectsByStudent(studentName);
         checkSubjectExist(subjects, subjectName);
         return getSubjectMarks(subjects, subjectName);
@@ -191,8 +191,12 @@ public class ClassRepositoryImpl implements ClassRepository {
 
     @Override
     public synchronized Report getReport(Integer minAvg) {
+        List<Student> students;
+        synchronized (this) {
+            students = readAllStudents();
+        }
         Report report = new Report();
-        List<Student> students = readAllStudents();
+
         students.forEach(student -> {
                 var avgMarks = new ArrayList<Float>();
                 var subjects = student.getSubjects();
