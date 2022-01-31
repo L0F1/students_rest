@@ -100,7 +100,7 @@ public class ClassRepositoryImpl implements ClassRepository {
     }
 
     @Override
-    public void updateSubjectByStudent(String studentName, Subject subject) {
+    public synchronized void updateSubjectByStudent(String studentName, Subject subject) {
         List<Student> students = readAllStudents();
         checkStudentExist(students, studentName);
         writeAllStudents(students
@@ -190,7 +190,7 @@ public class ClassRepositoryImpl implements ClassRepository {
     }
 
     @Override
-    public Report getReport(Integer minAvg) {
+    public synchronized Report getReport(Integer minAvg) {
         Report report = new Report();
         List<Student> students = readAllStudents();
         students.forEach(student -> {
